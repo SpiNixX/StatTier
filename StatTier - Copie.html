@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluateur d'Attributs de Personnage</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --font-color: #f0f0f0;
+            --accent-color: #ffff00;
+            --border-color: #4a4a4a;
+            --font-family: 'Press Start 2P', cursive;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--font-color);
+            font-family: var(--font-family);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .chart-container {
+            background-color: #000;
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            height: 500px;
+        }
+
+        .y-axis {
+            display: flex;
+            flex-direction: column;
+            width: 40px;
+            flex-shrink: 0;
+            height: 100%;
+            font-size: 14px;
+            color: var(--accent-color);
+            text-shadow: 2px 2px #000;
+        }
+
+        .y-axis-labels {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .y-axis-labels > span {
+            position: absolute;
+            right: 0;
+            transform: translateY(50%);
+        }
+        .y-axis-labels > span.label-0 { bottom: 0; transform: translateY(0); }
+        .y-axis-labels > span.label-20 { bottom: 20%; }
+        .y-axis-labels > span.label-40 { bottom: 40%; }
+        .y-axis-labels > span.label-60 { bottom: 60%; }
+        .y-axis-labels > span.label-80 { bottom: 80%; }
+        .y-axis-labels > span.label-max { top: 0; transform: translateY(0); }
+        
+        .y-axis-spacer {
+            height: 85px; /* Doit correspondre à .x-axis-container */
+            flex-shrink: 0;
+        }
+        
+        .chart-and-axis-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            border-left: 4px solid var(--border-color);
+            padding-left: 10px;
+        }
+
+        .chart-area {
+            flex-grow: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            gap: 5%;
+        }
+
+        .bar-wrapper {
+            flex-basis: 12%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .bar {
+            width: 100%;
+            background-color: #ccc;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.3s ease-out;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .x-axis-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 5%;
+            padding-top: 15px;
+            height: 85px; /* Doit correspondre à .y-axis-spacer */
+            flex-shrink: 0;
+        }
+
+        .attribute-label-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            flex-basis: 12%;
+        }
+
+        .icon-container {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 3px solid var(--border-color);
+            border-radius: 8px;
+            background-color: #111;
+        }
+
+        .icon-container svg {
+            width: 30px;
+            height: 30px;
+        }
+        
+        .attribute-label {
+            font-size: 14px;
+            color: var(--font-color);
+            text-shadow: 2px 2px #000;
+        }
+
+        .sliders-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background-color: #222;
+            border: 4px solid var(--border-color);
+            border-radius: 8px;
+        }
+        
+        .slider-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 15px;
+            background: #444;
+            outline: none;
+            border-radius: 5px;
+            border: 2px solid var(--border-color);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            background: var(--accent-color);
+            cursor: pointer;
+            border-radius: 5px;
+            border: 2px solid #000;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            background: var(--accent-color);
+            cursor: pointer;
+            border-radius: 5px;
+            border: 2px solid #000;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="chart-container">
+            <div class="y-axis">
+                <div class="y-axis-labels">
+                    <span class="label-0">0</span>
+                    <span class="label-20">20</span>
+                    <span class="label-40">40</span>
+                    <span class="label-60">60</span>
+                    <span class="label-80">80</span>
+                    <span class="label-max">MAX</span>
+                </div>
+                <div class="y-axis-spacer"></div>
+            </div>
+            <div class="chart-and-axis-wrapper">
+                <div class="chart-area" id="chart-area">
+                    <!-- Les barres seront générées par JavaScript -->
+                </div>
+                <div class="x-axis-container" id="x-axis-container">
+                    <!-- Les icônes et labels seront générés par JavaScript -->
+                </div>
+            </div>
+        </div>
+        <div class="sliders-container" id="sliders-container">
+            <!-- Les curseurs seront générés par JavaScript -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const attributes = [
+                { id: 'force', name: 'Force', label: 'FOR', value: 75, color: '#ff8c00', 
+                  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.5 4.5c-1.93 0-3.5 1.57-3.5 3.5v8c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5v-8c0-1.93-1.57-3.5-3.5-3.5zm-13 0C3.57 4.5 2 6.07 2 8v8c0 1.93 1.57 3.5 3.5 3.5s3.5-1.57 3.5-3.5V8c0-1.93-1.57-3.5-3.5-3.5zM15 12H9v2h6v-2z"></path></svg>` },
+                { id: 'vigueur', name: 'Vigueur', label: 'VIG', value: 55, color: '#dc3545',
+                  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>` },
+                { id: 'vitesse', name: 'Vitesse', label: 'VIT', value: 85, color: '#28a745',
+                  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 17l5-5-5-5M6 17l5-5-5-5"></path></svg>` },
+                { id: 'intelligence', name: 'Intelligence', label: 'INT', value: 65, color: '#f0f0f0',
+                  icon: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"></path></svg>` },
+                { id: 'furtivite', name: 'Furtivité', label: 'FUR', value: 70, color: '#6c757d',
+                  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>` },
+                { id: 'capacites', name: 'Capacités', label: 'CAP', value: 80, color: '#6f42c1',
+                  icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l1.09 7.26L22 12l-8.91 2.74L12 22l-1.09-7.26L2 12l8.91-2.74L12 2z"></path></svg>` }
+            ];
+
+            const chartArea = document.getElementById('chart-area');
+            const xAxisContainer = document.getElementById('x-axis-container');
+            const slidersContainer = document.getElementById('sliders-container');
+
+            attributes.forEach(attr => {
+                // Créer la barre et l'ajouter à la zone du graphique
+                const barWrapper = document.createElement('div');
+                barWrapper.className = 'bar-wrapper';
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+                bar.id = `bar-${attr.id}`;
+                bar.style.height = `${attr.value}%`;
+                bar.style.backgroundColor = attr.color;
+                barWrapper.appendChild(bar);
+                chartArea.appendChild(barWrapper);
+
+                // Créer le groupe icône/label et l'ajouter à l'axe X
+                const labelGroup = document.createElement('div');
+                labelGroup.className = 'attribute-label-group';
+                const iconContainer = document.createElement('div');
+                iconContainer.className = 'icon-container';
+                iconContainer.innerHTML = attr.icon;
+                const svgElement = iconContainer.querySelector('svg');
+                if (svgElement.getAttribute('fill') === 'currentColor') {
+                    svgElement.style.fill = attr.color;
+                } else {
+                    svgElement.style.stroke = attr.color;
+                }
+                const attributeLabel = document.createElement('div');
+                attributeLabel.className = 'attribute-label';
+                attributeLabel.textContent = attr.label;
+                labelGroup.appendChild(iconContainer);
+                labelGroup.appendChild(attributeLabel);
+                xAxisContainer.appendChild(labelGroup);
+                
+                // Créer le curseur de contrôle
+                const sliderWrapper = document.createElement('div');
+                sliderWrapper.className = 'slider-wrapper';
+                const sliderLabel = document.createElement('div');
+                sliderLabel.className = 'slider-label';
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = attr.name;
+                const valueSpan = document.createElement('span');
+                valueSpan.id = `value-${attr.id}`;
+                valueSpan.textContent = attr.value;
+                sliderLabel.appendChild(nameSpan);
+                sliderLabel.appendChild(valueSpan);
+                const slider = document.createElement('input');
+                slider.type = 'range';
+                slider.min = 0;
+                slider.max = 100;
+                slider.value = attr.value;
+                slider.dataset.attributeId = attr.id;
+                sliderWrapper.appendChild(sliderLabel);
+                sliderWrapper.appendChild(slider);
+                slidersContainer.appendChild(sliderWrapper);
+
+                // Ajouter l'écouteur d'événement pour le curseur
+                slider.addEventListener('input', (e) => {
+                    const newValue = e.target.value;
+                    document.getElementById(`bar-${attr.id}`).style.height = `${newValue}%`;
+                    document.getElementById(`value-${attr.id}`).textContent = newValue;
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
